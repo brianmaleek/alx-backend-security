@@ -124,9 +124,34 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# Cache configuration for rate limiting
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'unique-snowflake',
     },
 }
+
+# Rate limiting configuration
+RATELIMIT_USE_CACHE = 'default'
+
+# Rate limit settings
+RATELIMIT_ENABLE = True
+RATELIMIT_KEY_PREFIX = 'rl'
+
+# Custom rate limit functions
+def get_rate_limit_key(group, request):
+    """Custom function to determine rate limit key based on authentication status"""
+    if request.user.is_authenticated:
+        return f"user_{request.user.id}"
+    return f"ip_{request.META.get('REMOTE_ADDR', 'unknown')}"
+
+# Rate limit groups
+RATELIMIT_GROUPS = {
+    'authenticated': '10/m',  # 10 requests per minute for authenticated users
+    'anonymous': '5/m',       # 5 requests per minute for anonymous users
+}
+
+# Rate limit block settings
+RATELIMIT_BLOCK = True
+RATELIMIT_BLOCK_MSG = 'Rate limit exceeded. Please try again later.'
