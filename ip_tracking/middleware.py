@@ -1,9 +1,13 @@
-from .models import RequestLog
+from django.http import HttpResponseForbidden
+from .models import RequestLog, BlockedIP
 from django.utils.deprecation import MiddlewareMixin
 
 class RequestLoggingMiddleware(MiddlewareMixin):
     def process_request(self, request):
         ip = self.get_client_ip(request)
+        # Block specific IPs
+        if BlockedIP.objects.filter(ip_address=ip).exists():
+            return HttpResponseForbidden("Your IP has been blocked.")
         path = request.path
         RequestLog.objects.create(ip_address=ip, path=path)
     
