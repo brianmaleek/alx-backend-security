@@ -22,9 +22,16 @@ class BlockedIP(models.Model):
     blocked_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Blocked IP: {self.ip_address} - {self.reason or 'No reason provided'}"
-    
+        return self.ip_address
+
+class SuspiciousIP(models.Model):
+    ip_address = models.GenericIPAddressField(unique=True)
+    reason = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.ip_address} - {self.reason}"
+
     class Meta:
-        verbose_name = "Blocked IP"
-        verbose_name_plural = "Blocked IPs"
-        ordering = ['-blocked_at']  # Order by blocked_at descending
+        ordering = ['-created_at']
